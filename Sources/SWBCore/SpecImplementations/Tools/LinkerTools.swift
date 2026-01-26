@@ -315,9 +315,10 @@ public final class LdLinkerSpec : GenericLinkerSpec, SpecIdentifierType, @unchec
     }
 
     public override func commandLineForSignature(for task: any ExecutableTask) -> [ByteString]? {
-        return task.commandLine.indices.compactMap { index in
-            let arg = task.commandLine[index].asByteString
-            let prevArg = index > task.commandLine.startIndex ? task.commandLine[index - 1].asByteString : nil
+        let taskCommandLine = task.commandLine
+        return taskCommandLine.indices.compactMap { index in
+            let arg = taskCommandLine[index].asByteString
+            let prevArg = index > taskCommandLine.startIndex ? taskCommandLine[index - 1].asByteString : nil
             if isOutputAgnosticLinkerArgument(arg, prevArgument: prevArg) {
                 return nil
             }
@@ -1518,30 +1519,15 @@ public final class LdLinkerSpec : GenericLinkerSpec, SpecIdentifierType, @unchec
         // If the linker does not support multiple architectures update the path to include a subfolder based on the prefix map
         // to find the architecture specific executable.
         if !isLinkerMultiarch {
-            let archMap = scope.evaluate(BuiltinMacros._LD_MULTIARCH_PREFIX_MAP)
-            let archMappings = archMap.reduce(into: [String: String]()) { mappings, map in
-                let (arch, prefixDir) = map.split(":")
-                if !arch.isEmpty && !prefixDir.isEmpty {
-                    return mappings[arch] = prefixDir
-                }
-            }
-            if archMappings.isEmpty {
-                delegate.error("_LD_MULTIARCH is 'false', but no prefix mappings are present in _LD_MULTIARCH_PREFIX_MAP")
-                return nil
-            }
             // Linkers that don't support multiple architectures cannot support universal binaries, so ARCHS will
             // contain the target architecture and can only be a single value.
-            guard let arch = scope.evaluate(BuiltinMacros.ARCHS).only else {
-                delegate.error("_LD_MULTIARCH is 'false', but multiple ARCHS have been given, this is invalid")
+            let ld_arch = scope.evaluate(BuiltinMacros._LD_ARCH)
+            if ld_arch == "" {
+                delegate.error("_LD_MULTIARCH is 'false', but missing mapped linker arch, possible missing _LD_MULTIARCH_PREFIX_MAP setting")
                 return nil
             }
-            if let prefix = archMappings[arch] {
-                // Add in the target architecture prefix directory to path for search.
-                linkerPath = Path(prefix).join(linkerPath)
-            } else {
-                delegate.error("Could not find prefix mapping for \(arch) in _LD_MULTIARCH_PREFIX_MAP")
-                return nil
-            }
+            // Add in the target architecture prefix directory to path for search.
+            linkerPath = Path(ld_arch).join(linkerPath)
         }
         guard let toolPath = producer.executableSearchPaths.findExecutable(operatingSystem: producer.hostOperatingSystem, basename: linkerPath.str) else {
             return nil
@@ -1675,7 +1661,7 @@ public final class LibtoolLinkerSpec : GenericLinkerSpec, SpecIdentifierType, @u
             let outputString = String(decoding: executionResult.stdout, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
             let regexes: [Regex<(Substring, libtool: Substring)>]
             if producer.isApplePlatform {
-                regexes = [#/^Apple Inc\. version cctools(?:_[A-Za-z0-9_]+)?-(?<libtool>[0-9\.]+)$/#]
+                regexes = [#/^Apple Inc\. version .*-(?<libtool>[0-9\.]+)$/#]
             } else {
                 regexes = [
                     #/^libtool \(GNU libtool\) (?<libtool>[0-9\.]+).*/#,

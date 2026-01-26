@@ -220,7 +220,6 @@ public final class BuiltinMacros {
     public static let TARGET_BUILD_DIR = BuiltinMacros.declarePathMacro("TARGET_BUILD_DIR")
     public static let TARGET_BUILD_SUBPATH = BuiltinMacros.declarePathMacro("TARGET_BUILD_SUBPATH")
     public static let TARGET_NAME = BuiltinMacros.declareStringMacro("TARGET_NAME")
-    public static let TARGET_NAME_CASE_SENSITIVITY_DISCRIMINATOR = BuiltinMacros.declareStringMacro("TARGET_NAME_CASE_SENSITIVITY_DISCRIMINATOR")
     public static let TARGET_TEMP_DIR = BuiltinMacros.declarePathMacro("TARGET_TEMP_DIR")
     // FIXME: This macro should be deprecated.
     public static let TARGETNAME = BuiltinMacros.declareStringMacro("TARGETNAME")
@@ -431,6 +430,8 @@ public final class BuiltinMacros {
     public static let MERGE_LINKED_LIBRARIES = BuiltinMacros.declareBooleanMacro("MERGE_LINKED_LIBRARIES")
     public static let MERGED_BINARY_TYPE = BuiltinMacros.declareEnumMacro("MERGED_BINARY_TYPE") as EnumMacroDeclaration<MergedBinaryType>
     public static let MAKE_MERGEABLE = BuiltinMacros.declareBooleanMacro("MAKE_MERGEABLE")
+    public static let SKIP_MERGEABLE_LIBRARY_BUNDLE_HOOK = BuiltinMacros.declareBooleanMacro("SKIP_MERGEABLE_LIBRARY_BUNDLE_HOOK") // user-set
+    public static let LD_SKIP_MERGEABLE_LIBRARY_BUNDLE_HOOK = BuiltinMacros.declareBooleanMacro("LD_SKIP_MERGEABLE_LIBRARY_BUNDLE_HOOK") // synthesized based on above + MERGEABLE_LIBRARY
 
     // MARK: Task Planning Macros
 
@@ -834,6 +835,7 @@ public final class BuiltinMacros {
     public static let LD_WARN_UNUSED_DYLIBS = BuiltinMacros.declareBooleanMacro("LD_WARN_UNUSED_DYLIBS")
     public static let _LD_MULTIARCH = BuiltinMacros.declareBooleanMacro("_LD_MULTIARCH")
     public static let _LD_MULTIARCH_PREFIX_MAP = BuiltinMacros.declareStringListMacro("_LD_MULTIARCH_PREFIX_MAP")
+    public static let _LD_ARCH = BuiltinMacros.declareStringMacro("_LD_ARCH")
     public static let LEX = BuiltinMacros.declarePathMacro("LEX")
     public static let LEXFLAGS = BuiltinMacros.declareStringListMacro("LEXFLAGS")
     public static let LIBRARIAN = BuiltinMacros.declareStringMacro("LIBRARIAN")
@@ -1950,9 +1952,11 @@ public final class BuiltinMacros {
         LD_NO_PIE,
         LD_RUNPATH_SEARCH_PATHS,
         LD_SDK_IMPORTS_FILE,
+        LD_SKIP_MERGEABLE_LIBRARY_BUNDLE_HOOK,
         LD_WARN_UNUSED_DYLIBS,
         _LD_MULTIARCH,
         _LD_MULTIARCH_PREFIX_MAP,
+        _LD_ARCH,
         LEGACY_DEVELOPER_DIR,
         LEX,
         LEXFLAGS,
@@ -2205,6 +2209,7 @@ public final class BuiltinMacros {
         SKIP_INSTALL,
         SKIP_CLANG_STATIC_ANALYZER,
         SKIP_EMBEDDED_FRAMEWORKS_VALIDATION,
+        SKIP_MERGEABLE_LIBRARY_BUNDLE_HOOK,
         SOURCE_ROOT,
         SPECIALIZATION_SDK_OPTIONS,
         SRCROOT,
@@ -2383,7 +2388,6 @@ public final class BuiltinMacros {
         TARGET_DEVICE_OS_VERSION,
         TARGET_DEVICE_PLATFORM_NAME,
         TARGET_NAME,
-        TARGET_NAME_CASE_SENSITIVITY_DISCRIMINATOR,
         TARGET_TEMP_DIR,
         TEMP_DIR,
         TEMP_FILES_DIR,
